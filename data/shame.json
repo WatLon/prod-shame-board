@@ -75,5 +75,27 @@
     "date": "2026-03-29",
     "evidence": "https://t.me/c/2080029993/185413",
     "added_by": "misshanya"
+  },
+  {
+    "id": 5,
+    "telegram": "@watlon",
+    "description": "Решил что он главная мразь прода",
+    "quote": [
+      {
+        "from": "Амир",
+        "text": "А если многострок"
+      },
+      {
+        "from": "Амир",
+        "text": "то как"
+      },
+      {
+        "from": "Мишаня",
+        "text": "давай\nпротестим"
+      }
+    ],
+    "date": "2026-03-29",
+    "evidence": "",
+    "added_by": "WatLon"
   }
 ]

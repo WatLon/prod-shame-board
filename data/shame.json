@@ -16,10 +16,22 @@
         "from": "David Rakhmonov",
         "text": "Было у кого нибудь то что в форме неправильно вопрос заполнил на стажку"
       },
-      { "from": "David Rakhmonov", "text": "Я случайно нет нажал" },
-      { "from": "David Rakhmonov", "text": "Это можно поправить как то?" },
-      { "from": "Миша", "text": "Подожди, а ты пип разве?" },
-      { "from": "David Rakhmonov", "text": "полуфинала ПРОД" }
+      {
+        "from": "David Rakhmonov",
+        "text": "Я случайно нет нажал"
+      },
+      {
+        "from": "David Rakhmonov",
+        "text": "Это можно поправить как то?"
+      },
+      {
+        "from": "Миша",
+        "text": "Подожди, а ты пип разве?"
+      },
+      {
+        "from": "David Rakhmonov",
+        "text": "полуфинала ПРОД"
+      }
     ],
     "date": "2026-03-26",
     "evidence": "https://t.me/c/3874674741/46054",
@@ -45,5 +57,23 @@
     "date": "2026-03-29",
     "evidence": "",
     "added_by": "WatLon"
+  },
+  {
+    "id": 4,
+    "telegram": "@Ordo_xsenos",
+    "description": "Не думал, что пайчарм написан на джаве",
+    "quote": [
+      {
+        "from": "Xsenos",
+        "text": "На пайчарме такие же проблемы с intelij хотя у меня его нету"
+      },
+      {
+        "from": "Xsenos",
+        "text": "нет там в логах именно ошибка с джавой хотя это пайчарм"
+      }
+    ],
+    "date": "2026-03-29",
+    "evidence": "https://t.me/c/2080029993/185413",
+    "added_by": "misshanya"
   }
 ]

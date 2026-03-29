@@ -1,0 +1,244 @@
+name: Add shame entry
+
+on:
+  issues:
+    types: [labeled]
+
+jobs:
+  add-entry:
+    if: github.event.label.name == 'approved'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Parse issue, fetch avatar, update JSON
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const fs = require('fs');
+            const body = context.payload.issue.body || '';
+
+            // ── парсинг полей ──
+            function field(label) {
+              const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+              const re = new RegExp(`### ${escaped}\\s*\\n\\s*([\\s\\S]*?)(?=\\n### |$)`);
+              const m = body.match(re);
+              if (!m) return '';
+              const v = m[1].trim();
+              return (v === '_No response_' || v === 'None') ? '' : v;
+            }
+
+            const telegram    = field('Телеграм главного позорника').trim();
+            const description = field('Описание ситуации (необязательно)').trim();
+            const quoteRaw    = field('Цитата').trim();
+            const evidence    = field('Ссылка на сообщение (необязательно)').trim();
+
+            if (!telegram || !quoteRaw) {
+              core.setFailed('Не удалось распарсить telegram или quote');
+              return;
+            }
+
+            // ── парсинг цитаты ──
+            function parseQuote(raw) {
+                const lines = raw.split('\n');
+
+                // Паттерны
+                const tgHeader = /^(.+),\s*\[\d{2}\.\d{2}\.\d{4}\s+\d{2}:\d{2}\]$/;
+                const altTgLine = /^\[\d{1,2}\/\d{1,2}\/\d{2,4}\s+\d{1,2}:\d{2}(?:\s*[AP]M)?\]\s+(.+?):\s+([\s\S]*)$/i;
+
+                // ── Формат: "Name, [DD.MM.YYYY HH:MM]" ──
+                const hasTg = lines.some(l => tgHeader.test(l.trim()));
+                if (hasTg) {
+                    const msgs = [];
+                    let from = null;
+                    let textLines = [];
+
+                    for (const line of lines) {
+                        const trimmed = line.trim();
+                        const m = trimmed.match(tgHeader);
+
+                        if (m) {
+                            if (from && textLines.length) {
+                                msgs.push({ from, text: textLines.join('\n').trim() });
+                            }
+                            from = m[1].trim();
+                            textLines = [];
+                        } else if (from) {
+                            textLines.push(trimmed);
+                        }
+                    }
+                    if (from && textLines.length) {
+                        msgs.push({ from, text: textLines.join('\n').trim() });
+                    }
+
+                    const filtered = msgs.filter(m => m.text);
+                    if (filtered.length === 0) return raw;
+                    if (filtered.length === 1) return filtered[0].text;
+                    return filtered;
+                }
+
+                // ── Формат: "[M/D/YY H:MM AM/PM] Name: text" ──
+                const hasAltTg = lines.some(l => altTgLine.test(l.trim()));
+                if (hasAltTg) {
+                    const msgs = [];
+
+                    for (const line of lines) {
+                        const trimmed = line.trim();
+                        if (!trimmed) continue;
+
+                        const m = trimmed.match(altTgLine);
+                        if (m) {
+                            msgs.push({ from: m[1].trim(), text: m[2].trim() });
+                        } else if (msgs.length > 0) {
+                            msgs[msgs.length - 1].text += '\n' + trimmed;
+                        }
+                    }
+
+                    const filtered = msgs.filter(m => m.text);
+                    if (filtered.length === 0) return raw;
+                    if (filtered.length === 1) return filtered[0].text;
+                    return filtered;
+                }
+
+                // ── Формат: "@username: text" ──
+                const dialogPattern = /^@[\w]+:\s*.+$/;
+                const nonEmpty = lines.map(l => l.trim()).filter(Boolean);
+
+                if (nonEmpty.length > 1 && nonEmpty.every(l => dialogPattern.test(l))) {
+                    return nonEmpty.map(l => {
+                        const idx = l.indexOf(':');
+                        return {
+                            from: l.slice(0, idx).trim(),
+                            text: l.slice(idx + 1).trim()
+                        };
+                    });
+                }
+
+                // ── Несколько строк → массив ──
+                if (nonEmpty.length > 1) return nonEmpty;
+
+                // ── Одна строка ──
+                return nonEmpty[0] || raw;
+            }
+
+            const parsedQuote = parseQuote(quoteRaw);
+
+            // ── аватарка ──
+            const clean = telegram.replace(/^@/, '');
+            const avatarDir = 'avatars';
+            const avatarPath = `${avatarDir}/${clean}.jpg`;
+
+            if (!fs.existsSync(avatarDir)) {
+              fs.mkdirSync(avatarDir, { recursive: true });
+            }
+
+            if (!fs.existsSync(avatarPath)) {
+              try {
+                core.info(`Fetching avatar for @${clean}...`);
+                const page = await fetch(`https://t.me/${clean}`, {
+                  headers: { 'User-Agent': 'Mozilla/5.0 (compatible; ShameBot/1.0)' },
+                  redirect: 'follow',
+                });
+                const html = await page.text();
+                const ogMatch = html.match(
+                  /<meta\s+property=["']og:image["']\s+content=["']([^"']+)["']/i
+                );
+
+                if (ogMatch && ogMatch[1].startsWith('http')) {
+                  const imgUrl = ogMatch[1];
+                  const imgRes = await fetch(imgUrl);
+                  if (imgRes.ok) {
+                    const buf = Buffer.from(await imgRes.arrayBuffer());
+                    if (buf.length > 1000) {
+                      fs.writeFileSync(avatarPath, buf);
+                      core.info(`Avatar saved: ${avatarPath} (${buf.length} bytes)`);
+                    } else {
+                      core.info('Avatar too small, likely a placeholder — skipping');
+                    }
+                  }
+                } else {
+                  core.info('No og:image found');
+                }
+              } catch (e) {
+                core.warning(`Avatar fetch failed: ${e.message}`);
+              }
+            }
+
+            // ── обновляем JSON ──
+            const dataPath = 'data/shame.json';
+            const entries = JSON.parse(fs.readFileSync(dataPath, 'utf8'));
+            const maxId = entries.reduce((m, e) => Math.max(m, e.id || 0), 0);
+
+            const newEntry = {
+              id: maxId + 1,
+              telegram: telegram.startsWith('@') ? telegram : `@${telegram}`,
+            };
+            if (description) newEntry.description = description;
+            newEntry.quote = parsedQuote;
+            newEntry.date = new Date().toISOString().split('T')[0];
+            newEntry.evidence = evidence || '';
+            newEntry.added_by = context.payload.issue.user.login;
+
+            entries.push(newEntry);
+            fs.writeFileSync(dataPath, JSON.stringify(entries, null, 2) + '\n');
+
+            // Для коммит-сообщения берём начало цитаты
+            let preview = typeof parsedQuote === 'string'
+              ? parsedQuote
+              : Array.isArray(parsedQuote) && typeof parsedQuote[0] === 'string'
+                ? parsedQuote[0]
+                : parsedQuote[0]?.text || '';
+            core.exportVariable('SHAME_PREVIEW', preview.substring(0, 50));
+            core.exportVariable('ISSUE_NUM', String(context.payload.issue.number));
+
+      - name: Create PR
+        run: |
+          BRANCH="shame-${{ env.ISSUE_NUM }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$BRANCH"
+          git add data/shame.json avatars/
+
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 1
+          fi
+
+          git commit -m "📛 ${{ env.SHAME_PREVIEW }}... (closes #${{ env.ISSUE_NUM }})"
+          git push origin "$BRANCH"
+          gh pr create \
+            --title "📛 Новая запись на доску позора" \
+            --body "Автоматически из #${{ env.ISSUE_NUM }}" \
+            --base main \
+            --head "$BRANCH"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Comment on issue
+        if: success()
+        uses: actions/github-script@v8
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.issue.number,
+              body: '✅ PR создан. После мёржа запись появится на сайте 🔥'
+            });
+
+      - name: Comment on failure
+        if: failure()
+        uses: actions/github-script@v8
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.issue.number,
+              body: '❌ Что-то пошло не так. Проверьте формат заполнения.'
+            });

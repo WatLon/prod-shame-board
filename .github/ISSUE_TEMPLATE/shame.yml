@@ -1,0 +1,60 @@
+name: "📛 Номинировать на доску позора"
+description: "Кто-то в чате сказал дичь? Сюда"
+title: "shame: "
+labels: ["shame-nomination"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 🏆 Номинация на доску позора
+
+  - type: input
+    id: telegram
+    attributes:
+      label: "Телеграм главного позорника"
+      description: "Укажи корректный Telegram-тег в формате @username"
+      placeholder: "@username"
+    validations:
+      required: true
+
+  - type: input
+    id: description
+    attributes:
+      label: "Описание ситуации (необязательно)"
+      description: "Если без контекста непонятно что происходит"
+      placeholder: "Решил что он полуфиналист PROD..."
+
+  - type: textarea
+    id: quote
+    attributes:
+      label: "Цитата"
+      description: |
+        Скопируй сообщения из Telegram и вставь как есть.
+        Или просто напиши одну фразу — тоже работает.
+      placeholder: |
+        David Rakhmonov, [26.03.2026 23:49]
+        Я случайно нет нажал
+
+        Миша, [26.03.2026 23:50]
+        Подожди, а ты пип разве?
+
+        David Rakhmonov, [26.03.2026 23:50]
+        полуфинала ПРОД
+    validations:
+      required: true
+
+  - type: input
+    id: evidence
+    attributes:
+      label: "Ссылка на сообщение (необязательно)"
+      placeholder: "https://t.me/chat/12345"
+
+  - type: checkboxes
+    id: rules
+    attributes:
+      label: "Подтверждение"
+      options:
+        - label: "Цитата реальная или близко к тексту"
+          required: true
+        - label: "Telegram-тег указан корректно в формате @username"
+          required: true

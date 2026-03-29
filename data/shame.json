@@ -16,13 +16,47 @@
         "from": "David Rakhmonov",
         "text": "Было у кого нибудь то что в форме неправильно вопрос заполнил на стажку"
       },
-      { "from": "David Rakhmonov", "text": "Я случайно нет нажал" },
-      { "from": "David Rakhmonov", "text": "Это можно поправить как то?" },
-      { "from": "Миша", "text": "Подожди, а ты пип разве?" },
-      { "from": "David Rakhmonov", "text": "полуфинала ПРОД" }
+      {
+        "from": "David Rakhmonov",
+        "text": "Я случайно нет нажал"
+      },
+      {
+        "from": "David Rakhmonov",
+        "text": "Это можно поправить как то?"
+      },
+      {
+        "from": "Миша",
+        "text": "Подожди, а ты пип разве?"
+      },
+      {
+        "from": "David Rakhmonov",
+        "text": "полуфинала ПРОД"
+      }
     ],
     "date": "2026-03-26",
     "evidence": "https://t.me/c/3874674741/46054",
+    "added_by": "WatLon"
+  },
+  {
+    "id": 3,
+    "telegram": "@zoomdevs",
+    "description": "Зум",
+    "quote": [
+      {
+        "from": "Амир",
+        "text": "А если многострок"
+      },
+      {
+        "from": "Амир",
+        "text": "то как"
+      },
+      {
+        "from": "Мишаня",
+        "text": "давай\nпротестим"
+      }
+    ],
+    "date": "2026-03-29",
+    "evidence": "",
     "added_by": "WatLon"
   }
 ]

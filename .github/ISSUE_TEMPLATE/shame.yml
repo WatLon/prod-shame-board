@@ -12,7 +12,6 @@ body:
     id: telegram
     attributes:
       label: "Телеграм главного позорника"
-      description: "Укажи корректный Telegram-тег в формате @username"
       placeholder: "@username"
     validations:
       required: true
@@ -21,7 +20,7 @@ body:
     id: description
     attributes:
       label: "Описание ситуации (необязательно)"
-      description: "Если без контекста непонятно что происходит"
+      description: "Если без контекста непонятно почему это смешно"
       placeholder: "Решил что он полуфиналист PROD..."
 
   - type: textarea
@@ -29,8 +28,10 @@ body:
     attributes:
       label: "Цитата"
       description: |
-        Скопируй сообщения из Telegram и вставь как есть.
-        Или просто напиши одну фразу — тоже работает.
+        Варианты:
+        • Одна фраза — просто текст
+        • Диалог — выдели сообщения в Telegram, скопируй и вставь сюда как есть (даты уберутся автоматически)
+        • Картинки — вставь скриншот прямо в это поле, он встанет на место курсора
       placeholder: |
         David Rakhmonov, [26.03.2026 23:49]
         Я случайно нет нажал
@@ -55,6 +56,4 @@ body:
       label: "Подтверждение"
       options:
         - label: "Цитата реальная или близко к тексту"
-          required: true
-        - label: "Telegram-тег указан корректно в формате @username"
           required: true

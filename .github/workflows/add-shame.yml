@@ -197,7 +197,7 @@ jobs:
             // ── аватарка ──
             const clean = telegram.replace(/^@/, '');
             const avatarDir = 'avatars';
-            const avatarPath = `${avatarDir}/${clean}.png`;
+            const avatarPath = `${avatarDir}/${clean}.jpg`;
 
             if (!fs.existsSync(avatarDir)) {
               fs.mkdirSync(avatarDir, { recursive: true });
@@ -216,7 +216,7 @@ jobs:
                 );
 
                 if (ogMatch && ogMatch[1].startsWith('http')) {
-                  const imgUrl = ogMatch[1].replace(/\.jpg$/i, ".png");
+                  const imgUrl = ogMatch[1];
                   const imgRes = await fetch(imgUrl);
                   if (imgRes.ok) {
                     const buf = Buffer.from(await imgRes.arrayBuffer());
@@ -262,6 +262,29 @@ jobs:
                 : parsedQuote[0]?.text || '';
             core.exportVariable('SHAME_PREVIEW', preview.substring(0, 50));
             core.exportVariable('ISSUE_NUM', String(context.payload.issue.number));
+
+      - name: Convert avatars to webp
+        run: |
+          set -euo pipefail
+
+          if [ -d "avatars" ]; then
+            find avatars -type f ! -iname "*.webp" ! -name ".*" -print0 \
+              | while IFS= read -r -d '' f
+            do
+              out="${f%.*}.webp"
+
+              if [[ -f "$out" ]]; then
+                echo "Skipping (exists): $out"
+                continue
+              fi
+
+              echo "Converting: $f -> $out"
+              magick "$f" "$out"
+              rm "$f"
+            done
+          else
+            echo "No avatars directory, skipping"
+          fi
 
       - name: Create PR
         run: |

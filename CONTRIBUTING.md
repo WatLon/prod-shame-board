@@ -90,21 +90,30 @@ David Rakhmonov, [26.03.2026 23:49]
    git clone https://github.com/ТВОЙ_ЛОГИН/prod-shame-board.git
    cd prod-shame-board
    ```
-3. Создай ветку:
+3. Установи зависимости (рекомендуется [Bun](https://bun.sh)):
+   ```bash
+   bun install
+   ```
+4. Создай ветку:
    ```bash
    git checkout -b feat/моя-фича
    ```
-4. Проверяй локально:
+5. Запусти сервер для разработки:
    ```bash
-   python3 -m http.server 8000
+   bun dev
    ```
-5. Коммить и пушь:
+   Сайт будет доступен по адресу [http://localhost:4321](http://localhost:4321)
+6. Собери проект для проверки:
+   ```bash
+   bun run build
+   ```
+7. Коммить и пушь:
    ```bash
    git add .
    git commit -m "feat: описание"
    git push origin feat/моя-фича
    ```
-6. Открой Pull Request
+8. Открой Pull Request
 
 ## Правила
 

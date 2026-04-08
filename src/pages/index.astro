@@ -1,0 +1,288 @@
+---
+import Layout from "../layouts/Layout.astro";
+import shameData from "../data/shame.json";
+
+interface QuoteMessage {
+  from: string;
+  text?: string;
+  image?: string | string[];
+}
+
+interface ShameEntry {
+  id: number;
+  telegram: string;
+  description?: string;
+  quote: string | string[] | QuoteMessage[];
+  date: string;
+  evidence: string;
+  added_by: string;
+  images?: string | string[];
+}
+
+const entries: ShameEntry[] = [...shameData].sort((a, b) => b.date.localeCompare(a.date));
+const peopleCount = new Set(entries.map(e => e.telegram)).size;
+
+/* ── яркие цвета для лучшего контраста на темном фоне (#181833) ── */
+const palette = [
+  "#38bdf8", // sky-400
+  "#fb7185", // rose-400
+  "#facc15", // yellow-400
+  "#4ade80", // green-400
+  "#fb923c", // orange-400
+  "#c084fc", // purple-400
+  "#22d3ee", // cyan-400
+  "#f472b6", // pink-400
+  "#818cf8", // indigo-400
+  "#2dd4bf", // teal-400
+  "#fbbf24", // amber-400
+  "#a78bfa", // violet-400
+  "#f87171", // red-400
+  "#e879f9", // fuchsia-400
+  "#60a5fa", // blue-400
+  "#e2e8f0", // slate-200
+];
+
+function hash(str: string) {
+  let h = 0;
+  for (let i = 0; i < str.length; i++) {
+    h = str.charCodeAt(i) + ((h << 5) - h);
+  }
+  return Math.abs(h);
+}
+
+function colorFor(name: string) {
+  return palette[hash(name) % palette.length];
+}
+
+function getAvatarUrl(telegram: string) {
+  const clean = telegram.replace("@", "");
+  return `/avatars/${clean}.png`;
+}
+
+function getLetter(telegram: string) {
+  const clean = telegram.replace("@", "");
+  return clean.length > 0 ? clean[0].toUpperCase() : "?";
+}
+---
+
+<Layout title="Доска позора">
+  <header>
+    <div class="logo" role="img" aria-label="Трофей">🏆</div>
+    <h1>Доска позора</h1>
+    <p class="tagline">Лучшие высказывания чата, увековеченные навсегда</p>
+    <div class="header-actions">
+      <a
+        href="https://github.com/WatLon/prod-shame-board/issues/new?template=shame.yml"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="btn btn-accent">📛 Номинировать</a
+      >
+      <a
+        href="https://github.com/WatLon/prod-shame-board"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="btn btn-ghost"
+        aria-label="Репозиторий проекта на GitHub"
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path
+            d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"
+          ></path>
+        </svg>
+        GitHub
+      </a>
+    </div>
+  </header>
+
+  <div class="counter" id="counter">
+    <strong>{entries.length}</strong> позорных записей · <strong>{peopleCount}</strong> уникальных авторов
+  </div>
+
+  <div class="search-wrap">
+    <input
+      type="text"
+      id="search"
+      placeholder="🔍 Поиск по цитатам и людям..."
+      aria-label="Поиск по цитатам и людям"
+      autocomplete="off"
+    />
+  </div>
+
+  <main id="board">
+    {
+      entries.map((entry, i) => (
+        <article
+          class="entry"
+          style={`animation-delay: ${i * 0.04}s`}
+          data-searchable={JSON.stringify({
+            telegram: entry.telegram.toLowerCase(),
+            description: (entry.description || "").toLowerCase(),
+            quote: JSON.stringify(entry.quote).toLowerCase(),
+          })}
+        >
+          <div class="entry-header">
+            <div class="entry-avatar" style={`background: ${colorFor(entry.telegram)}`}>
+              <img
+                src={getAvatarUrl(entry.telegram)}
+                alt=""
+                width="42"
+                height="42"
+                loading="lazy"
+                onerror="this.remove()"
+              />
+              {getLetter(entry.telegram)}
+            </div>
+            <div class="entry-username">
+              <a
+                href={`https://t.me/${entry.telegram.replace("@", "")}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={`Профиль ${entry.telegram} в Telegram`}
+              >
+                {entry.telegram}
+              </a>
+            </div>
+          </div>
+
+          {entry.description && <div class="entry-desc">{entry.description}</div>}
+
+          {entry.images && (
+            <div class="entry-images">
+              {(Array.isArray(entry.images) ? entry.images : [entry.images]).map(url => (
+                <img
+                  src={url}
+                  alt="Скриншот-подтверждение"
+                  loading="lazy"
+                  width="600"
+                  height="400"
+                  style="aspect-ratio: auto; width: 100%; height: auto;"
+                  onclick="window.open(this.src,'_blank')"
+                />
+              ))}
+            </div>
+          )}
+
+          <div class="entry-quote">
+            {typeof entry.quote === "string" ? (
+              <span class="quote-single">
+                {entry.quote.split("\n").map((line, idx, arr) => (
+                  <Fragment key={idx}>
+                    {line}
+                    {idx < arr.length - 1 && <br />}
+                  </Fragment>
+                ))}
+              </span>
+            ) : Array.isArray(entry.quote) && typeof entry.quote[0] === "string" ? (
+              (entry.quote as string[]).map(line => (
+                <div class="quote-line">
+                  {line.split("\n").map((l, i, a) => (
+                    <Fragment key={i}>
+                      {l}
+                      {i < a.length - 1 && <br />}
+                    </Fragment>
+                  ))}
+                </div>
+              ))
+            ) : (
+              (entry.quote as QuoteMessage[]).map(msg => (
+                <div class="quote-msg">
+                  <span class="quote-msg-author" style={`color: ${colorFor(msg.from)}`}>
+                    {msg.from}
+                  </span>
+                  {msg.image && (
+                    <div class="quote-msg-images">
+                      {(Array.isArray(msg.image) ? msg.image : [msg.image]).map(url => (
+                        <img
+                          src={url}
+                          alt={`Изображение от ${msg.from}`}
+                          loading="lazy"
+                          width="600"
+                          height="400"
+                          style="aspect-ratio: auto; width: 100%; height: auto;"
+                          onclick="window.open(this.src,'_blank')"
+                        />
+                      ))}
+                    </div>
+                  )}
+                  {msg.text && (
+                    <span class="quote-msg-text">
+                      {msg.text.split("\n").map((line, i, a) => (
+                        <Fragment key={i}>
+                          {line}
+                          {i < a.length - 1 && <br />}
+                        </Fragment>
+                      ))}
+                    </span>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
+
+          <div class="entry-footer">
+            <span class="entry-date">{entry.date}</span>
+            {entry.evidence && (
+              <a
+                href={entry.evidence}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="entry-evidence"
+                aria-label="Ссылка на сообщение-подтверждение"
+              >
+                📎 пруф
+              </a>
+            )}
+          </div>
+        </article>
+      ))
+    }
+    <div id="empty-state" class="empty" style="display: none;">
+      <div id="empty-icon" class="empty-icon" role="img" aria-label="Ангел">😇</div>
+      <p>Ничего не найдено.</p>
+    </div>
+  </main>
+
+  <script>
+    const searchInput = document.getElementById("search") as HTMLInputElement;
+    const entriesElements = document.querySelectorAll(".entry") as NodeListOf<HTMLElement>;
+    const emptyState = document.getElementById("empty-state");
+    const counter = document.getElementById("counter");
+
+    function applySearch() {
+      const q = searchInput.value.toLowerCase().trim();
+      let visibleCount = 0;
+      let visiblePeople = new Set();
+
+      entriesElements.forEach(el => {
+        const searchableData = JSON.parse(el.dataset.searchable || "{}");
+        const matches =
+          !q ||
+          searchableData.telegram.includes(q) ||
+          searchableData.description.includes(q) ||
+          searchableData.quote.includes(q);
+
+        if (matches) {
+          el.style.display = "";
+          visibleCount++;
+          visiblePeople.add(searchableData.telegram);
+        } else {
+          el.style.display = "none";
+        }
+      });
+
+      if (emptyState) {
+        emptyState.style.display = visibleCount === 0 ? "block" : "none";
+      }
+
+      if (counter) {
+        if (visibleCount === 0 && q) {
+          counter.innerHTML = "";
+        } else {
+          counter.innerHTML = `<strong>${visibleCount}</strong> позорных записей · <strong>${visiblePeople.size}</strong> уникальных авторов`;
+        }
+      }
+    }
+
+    searchInput?.addEventListener("input", applySearch);
+  </script>
+</Layout>

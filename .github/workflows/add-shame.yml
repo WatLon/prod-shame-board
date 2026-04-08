@@ -263,6 +263,29 @@ jobs:
             core.exportVariable('SHAME_PREVIEW', preview.substring(0, 50));
             core.exportVariable('ISSUE_NUM', String(context.payload.issue.number));
 
+      - name: Convert avatars to webp
+        run: |
+          set -euo pipefail
+
+          if [ -d "avatars" ]; then
+            find avatars -type f ! -iname "*.webp" ! -name ".*" -print0 \
+              | while IFS= read -r -d '' f
+            do
+              out="${f%.*}.webp"
+
+              if [[ -f "$out" ]]; then
+                echo "Skipping (exists): $out"
+                continue
+              fi
+
+              echo "Converting: $f -> $out"
+              magick "$f" "$out"
+              rm "$f"
+            done
+          else
+            echo "No avatars directory, skipping"
+          fi
+
       - name: Create PR
         run: |
           BRANCH="shame-${{ env.ISSUE_NUM }}"

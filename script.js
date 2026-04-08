@@ -1,4 +1,4 @@
-(async function () {
+(async function() {
   const res = await fetch("data/shame.json");
   let entries = await res.json();
   entries.sort((a, b) => b.date.localeCompare(a.date));
@@ -58,7 +58,7 @@
 
     return `
             <div class="entry-avatar" style="background:${color}">
-                <img src="avatars/${clean}.jpg"
+                <img src="avatars/${clean}.webp"
                      alt="" loading="lazy"
                      onerror="this.remove()">
                 ${letter}
@@ -81,12 +81,12 @@
     return `
             <div class="quote-msg-images">
                 ${urls
-                  .map(
-                    (url) =>
-                      `<img src="${esc(url)}" alt="" loading="lazy"
+        .map(
+          (url) =>
+            `<img src="${esc(url)}" alt="" loading="lazy"
                           onclick="window.open(this.src,'_blank')">`,
-                  )
-                  .join("")}
+        )
+        .join("")}
             </div>`;
   }
 
@@ -97,12 +97,12 @@
     return `
             <div class="entry-images">
                 ${list
-                  .map(
-                    (url) =>
-                      `<img src="${esc(url)}" alt="" loading="lazy"
+        .map(
+          (url) =>
+            `<img src="${esc(url)}" alt="" loading="lazy"
                           onclick="window.open(this.src,'_blank')">`,
-                  )
-                  .join("")}
+        )
+        .join("")}
             </div>`;
   }
 
@@ -149,7 +149,7 @@
       typeof item === "string"
         ? item.toLowerCase().includes(q)
         : (item.text || "").toLowerCase().includes(q) ||
-          item.from.toLowerCase().includes(q),
+        item.from.toLowerCase().includes(q),
     );
   }
 
@@ -208,11 +208,11 @@
     const q = search.value.toLowerCase().trim();
     const filtered = q
       ? entries.filter(
-          (e) =>
-            e.telegram.toLowerCase().includes(q) ||
-            (e.description || "").toLowerCase().includes(q) ||
-            quoteIncludes(e.quote, q),
-        )
+        (e) =>
+          e.telegram.toLowerCase().includes(q) ||
+          (e.description || "").toLowerCase().includes(q) ||
+          quoteIncludes(e.quote, q),
+      )
       : entries;
 
     renderBoard(filtered);

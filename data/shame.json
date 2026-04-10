@@ -341,5 +341,24 @@
     "date": "2026-04-10",
     "evidence": "https://t.me/c/2080029993/210971",
     "added_by": "misshanya"
+  },
+  {
+    "id": 15,
+    "telegram": "@basster284",
+    "description": "Предложил решить проблему неправильно настроенного gh pages пушом в репу",
+    "quote": [
+      {
+        "from": "Амир",
+        "text": "ну вот что тут теперь",
+        "image": "https://github.com/user-attachments/assets/2d002e07-70b2-4222-aac7-d3024208fbf1"
+      },
+      {
+        "from": "Basster284",
+        "text": "просто пуш сделай"
+      }
+    ],
+    "date": "2026-04-10",
+    "evidence": "https://t.me/c/2080029993/211033",
+    "added_by": "misshanya"
   }
 ]

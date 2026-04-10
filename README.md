@@ -16,8 +16,6 @@
 
 ## Стек
 
-- [Astro 6](https://astro.build/)
-- [Bun](https://bun.sh/)
-- TypeScript
+- HTML / CSS / JS (без фреймворков)
 - GitHub Pages
 - GitHub Actions

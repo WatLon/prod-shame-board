@@ -196,7 +196,7 @@ jobs:
 
             // ── аватарка ──
             const clean = telegram.replace(/^@/, '');
-            const avatarDir = 'public/avatars';
+            const avatarDir = 'avatars';
             const avatarPath = `${avatarDir}/${clean}.jpg`;
 
             if (!fs.existsSync(avatarDir)) {
@@ -236,7 +236,7 @@ jobs:
             }
 
             // ── обновляем JSON ──
-            const dataPath = 'src/data/shame.json';
+            const dataPath = 'data/shame.json';
             const entries = JSON.parse(fs.readFileSync(dataPath, 'utf8'));
             const maxId = entries.reduce((m, e) => Math.max(m, e.id || 0), 0);
 
@@ -263,19 +263,28 @@ jobs:
             core.exportVariable('SHAME_PREVIEW', preview.substring(0, 50));
             core.exportVariable('ISSUE_NUM', String(context.payload.issue.number));
 
-      - name: Convert avatars to png
+      - name: Convert avatars to webp
         run: |
           set -euo pipefail
 
-          find public/avatars -type f ! -iname "*.png" ! -name ".*" -print0 \
-            | while IFS= read -r -d '' f
-          do
-            out="${f%.*}.png"
+          if [ -d "avatars" ]; then
+            find avatars -type f ! -iname "*.webp" ! -name ".*" -print0 \
+              | while IFS= read -r -d '' f
+            do
+              out="${f%.*}.webp"
 
-            echo "Converting: $f -> $out"
-            magick "$f" "$out"
-            rm "$f"
-          done
+              if [[ -f "$out" ]]; then
+                echo "Skipping (exists): $out"
+                continue
+              fi
+
+              echo "Converting: $f -> $out"
+              magick "$f" "$out"
+              rm "$f"
+            done
+          else
+            echo "No avatars directory, skipping"
+          fi
 
       - name: Create PR
         run: |
@@ -283,7 +292,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git checkout -b "$BRANCH"
-          git add src/data/shame.json public/avatars/
+          git add data/shame.json avatars/
 
           if git diff --cached --quiet; then
             echo "No changes to commit"
